@@ -35,7 +35,7 @@ public class Plugin extends JavaPlugin{
 
         try {
             //Make sure this is alligned with the plugin.yml, the first in the list is used for the permissions
-            List<String> prefixes = new ArrayList<>(Arrays.asList("automatichelper", "ae"));
+            List<String> prefixes = new ArrayList<>(Arrays.asList("automatichelper", "ah"));
             this.commandHandler = new CommandHandler(this, prefixes, manager);
             for(String prefix : prefixes){
                 this.getCommand(prefix).setExecutor(commandHandler);

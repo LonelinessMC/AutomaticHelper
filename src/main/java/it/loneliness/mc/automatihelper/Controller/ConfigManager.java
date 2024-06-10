@@ -13,7 +13,7 @@ import java.util.logging.Level;
 public class ConfigManager {
     public enum CONFIG_ITEMS {
         //TODO if any of the keys is the same return an error, hopefully at compile time
-        CHAT_PREFIX("chatPrefix", "LoneHelper"),
+        CHAT_PREFIX("chatPrefix", "&#FE6847[&#FBB13CLoneHelper&#FE6847] "),
         MAX_UNVERIFIED_PLAYERS("maxUnverifiedPlayers", 20),
         UNABLE_TO_JOIN_MESSAGE("unableToJoinMessage", "Chiedi su discord.loneliness.it di accedere alla coda prioritaria"),
         CHAT_DELETE_MESSAGE("chatDeleteMessage", "Chat temporaneamente disabilitata per gli stranieri, chiedi su discord.loneliness.it di verificare il tuo account"),

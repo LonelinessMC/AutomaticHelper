@@ -20,7 +20,7 @@ import it.loneliness.mc.automatihelper.Model.LogHandler;
 public class Manager implements Listener {
 
     private static final long CACHE_DURATION = TimeUnit.SECONDS.toMillis(10);
-    private static final String ALLOWED_CHARACTERS = "a-zA-ZàèéìòùÀÈÉÌÒÙçÇ .,;!?";
+    private static final String ALLOWED_CHARACTERS = "a-zA-ZàèéìòùÀÈÉÌÒÙçÇ .,;!?'\"";
     private static final Pattern ALLOWED_CHARACTERS_PATTERN = Pattern.compile("^[ " + ALLOWED_CHARACTERS + "]+$");
 
     private String kickMessage;
@@ -37,9 +37,11 @@ public class Manager implements Listener {
 
     private Announcement anouncement;
     private FIFOCache<String, String> ipCache;
+    private LogHandler logger;
 
 
     public Manager(Plugin plugin, LogHandler logger) {
+        this.logger = logger;
         kickMessage = plugin.getConfigManager().getString(CONFIG_ITEMS.UNABLE_TO_JOIN_MESSAGE);
         maxNotTrustedPlayer = plugin.getConfigManager().getInt(CONFIG_ITEMS.MAX_UNVERIFIED_PLAYERS);
         trustedPlayerPermission = plugin.getConfigManager().getString(CONFIG_ITEMS.TRUSTED_PLAYER_PERMISSION);
@@ -52,7 +54,7 @@ public class Manager implements Listener {
 
         untrustedChatDisabled = false; // when plugin starts we don't want to disable the chat
 
-        ipCache = new FIFOCache<>(100);
+        ipCache = new FIFOCache<>(50);
     }
 
     @EventHandler
@@ -64,20 +66,22 @@ public class Manager implements Listener {
                 anouncement.sendPrivateMessage(p, chatDeleteMessage);
                 return;
             }
-        }
-        String message = event.getMessage();
 
-        if(message.length() > maxMexLength){
-            event.setCancelled(true);
-            anouncement.sendPrivateMessage(p, tooLongMessage);
-            return;
-        }
+            String message = event.getMessage();
 
-        if(!ALLOWED_CHARACTERS_PATTERN.matcher(message).matches()){
-            event.setCancelled(true);
-            anouncement.sendPrivateMessage(p, invalidCharMessage);
-            return;
+            if(message.length() > maxMexLength){
+                event.setCancelled(true);
+                anouncement.sendPrivateMessage(p, tooLongMessage);
+                return;
+            }
+
+            if(!ALLOWED_CHARACTERS_PATTERN.matcher(message).matches()){
+                event.setCancelled(true);
+                anouncement.sendPrivateMessage(p, invalidCharMessage);
+                return;
+            }
         }
+        
     }
 
     @EventHandler
@@ -86,15 +90,16 @@ public class Manager implements Listener {
         if(!player.hasPermission(trustedPlayerPermission)){
             int onlineUntrustedPlayerCount = getOnlineUntrustedPlayerCound();
             if(onlineUntrustedPlayerCount >= maxNotTrustedPlayer){
-                event.disallow(PlayerLoginEvent.Result.KICK_OTHER, kickMessage);
+                event.disallow(PlayerLoginEvent.Result.KICK_OTHER, kickMessage+" ref.1");
                 return;
             }
 
-            String ipAddress = player.getAddress().getHostString();
+            String ipAddress = event.getAddress().getHostAddress();
             String playerName = player.getName();
+            logger.debug(ipAddress + " " + playerName);
             String existingPlayerName = ipCache.get(ipAddress);
             if(existingPlayerName != null && !existingPlayerName.equals(playerName)){
-                event.disallow(PlayerLoginEvent.Result.KICK_OTHER, kickMessage);
+                event.disallow(PlayerLoginEvent.Result.KICK_OTHER, kickMessage+" ref.2");
                 return;
             } else {
                 ipCache.put(ipAddress, playerName);
