@@ -9,12 +9,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 
 import it.loneliness.mc.automatihelper.Plugin;
 import it.loneliness.mc.automatihelper.Controller.Announcement;
 import it.loneliness.mc.automatihelper.Controller.ConfigManager.CONFIG_ITEMS;
+import it.loneliness.mc.automatihelper.Model.FIFOCache;
 import it.loneliness.mc.automatihelper.Model.LogHandler;
 
 public class Manager implements Listener {
@@ -36,6 +36,7 @@ public class Manager implements Listener {
     private boolean untrustedChatDisabled;
 
     private Announcement anouncement;
+    private FIFOCache<String, String> ipCache;
 
 
     public Manager(Plugin plugin, LogHandler logger) {
@@ -50,6 +51,8 @@ public class Manager implements Listener {
         anouncement = Announcement.getInstance(plugin);
 
         untrustedChatDisabled = false; // when plugin starts we don't want to disable the chat
+
+        ipCache = new FIFOCache<>(100);
     }
 
     @EventHandler
@@ -84,6 +87,17 @@ public class Manager implements Listener {
             int onlineUntrustedPlayerCount = getOnlineUntrustedPlayerCound();
             if(onlineUntrustedPlayerCount >= maxNotTrustedPlayer){
                 event.disallow(PlayerLoginEvent.Result.KICK_OTHER, kickMessage);
+                return;
+            }
+
+            String ipAddress = player.getAddress().getHostString();
+            String playerName = player.getName();
+            String existingPlayerName = ipCache.get(ipAddress);
+            if(existingPlayerName != null && !existingPlayerName.equals(playerName)){
+                event.disallow(PlayerLoginEvent.Result.KICK_OTHER, kickMessage);
+                return;
+            } else {
+                ipCache.put(ipAddress, playerName);
             }
         }
     }
@@ -104,6 +118,10 @@ public class Manager implements Listener {
 
     public void setUntrustedChatDisabled(boolean value){
         this.untrustedChatDisabled = value;
+    }
+
+    public void flushIPCache(){
+        this.ipCache.clear();
     }
 
 }

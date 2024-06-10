@@ -1,3 +1,1 @@
-# LoneWeekTreasureHuntSpigotPlugin
-# AutomaticHelper
 # AutomaticHelper

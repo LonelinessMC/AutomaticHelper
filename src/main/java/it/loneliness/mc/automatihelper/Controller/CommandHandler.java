@@ -37,9 +37,17 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
         commandList.add(new CommandEntry("help", permissionPrefix, this::getHelp, true));
         commandList.add(new CommandEntry("disableuntrustedchat", permissionPrefix, this::disableUntrustedChat, true));
         commandList.add(new CommandEntry("enableuntrustedchat", permissionPrefix, this::enableUntrustedChat, true));
+        commandList.add(new CommandEntry("flushipcache", permissionPrefix, this::flushIpCache, true));
 
         this.manager = manager;
         this.announcement = Announcement.getInstance(plugin);
+    }
+
+    private boolean flushIpCache(CommandParams params) {
+        manager.flushIPCache();
+        Announcement.getInstance(plugin).sendPrivateMessage(params.sender,
+                "Flushed ip cache of untrusted players");
+        return true;
     }
 
     private boolean disableUntrustedChat(CommandParams params) {
